@@ -10,6 +10,175 @@
     background-color: rgba(0, 0, 0, 0.04) !important;
     color: #000 !important;
   }
+
+  /* Caramel Apple One Time Purchase Box */
+  .caramel-apple-buybox {
+    display: none;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    background-color: #fafafa;
+    margin-bottom: 1.5rem;
+  }
+
+  .caramel-apple-buybox.active {
+    display: block;
+  }
+
+  .caramel-apple-option {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .caramel-apple-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .caramel-apple-card:hover {
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .caramel-apple-card:focus-within {
+    outline: 2px solid #D2AF4BFF;
+    outline-offset: 2px;
+  }
+
+  .caramel-apple-option:checked + .caramel-apple-card {
+    border-color: #000;
+    border-width: 2px;
+  }
+
+  .caramel-apple-radio {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: #fff;
+  }
+
+  .caramel-apple-radio::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .caramel-apple-option:checked + .caramel-apple-card .caramel-apple-radio::after {
+    opacity: 1;
+  }
+
+  .caramel-apple-option:checked + .caramel-apple-card .caramel-apple-radio {
+    border-color: #000;
+  }
+
+  .caramel-apple-content {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .caramel-apple-label {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .caramel-apple-savings {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.125rem;
+  }
+
+  .caramel-apple-pricing {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .caramel-apple-price-compare {
+    font-size: 0.875rem;
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  .caramel-apple-price-final {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .caramel-apple-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    background-color: #D2AF4BFF;
+    color: #fff;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .caramel-apple-cta {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background-color: #D2AF4BFF;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+  }
+
+  .caramel-apple-cta:hover {
+    background-color: #c09d3f;
+  }
+
+  .caramel-apple-cta:focus {
+    outline: 2px solid #D2AF4BFF;
+    outline-offset: 2px;
+  }
+
+  .caramel-apple-cta:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 640px) {
+    .caramel-apple-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .caramel-apple-pricing {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
 </style>
 
 {% liquid
@@ -30,7 +199,8 @@
 
 <div class="form-wrapper rounded">
   {% form 'product', product, onsubmit: 'onSubmitAtcForm(this, event)' %}
-    <input type="hidden" name="id" value="{{ current_variant.id }}">
+    <input type="hidden" name="id" value="{{ current_variant.id }}" id="variant-id-input">
+    <input type="hidden" name="quantity" value="1" id="quantity-input">
 
     {% unless product.has_only_default_variant %}
       <ul
@@ -39,7 +209,7 @@
       >
         {% for option in product.options_with_values %}
           {% if settings.size_buttons_names contains option.name %}
-            <div>
+            <div data-size-selector>
               <div class="tw-mb-3 tw-flex tw-items-center tw-justify-between">
                 <span class="tw-text-base tw-font-bold tw-uppercase">{{ option.name }}</span>
               </div>
@@ -154,7 +324,7 @@
                             {% endfor %}
 
                             <span class="tw-text-base tw-font-bold tw-uppercase">{{ value }}</span>
-                            {%  if value == 'Sour Gummy' %}
+                            {%  if value == 'Caramel Apple' %}
                               <span class="tw-text-xs tw-font-bold tw-uppercase tw-text-white tw-p-1 tw-rounded-lg" style="background: linear-gradient(135deg, #9ECD15, #EB7E6D, #E35298, #BD2991, #39B4CF);">NEW!</span>
                             {% endif %}
                           </label>
@@ -172,9 +342,114 @@
 
     {% comment %} {% render 'product-purchase-options' %} {% endcomment %}
     {%- assign form_id = 'product_form_' | append: product.id -%}
-    {% render 'skio-block', product: product, product_form_id: form_id, debug: false %}
+    <div data-subscription-block>
+      {% render 'skio-block', product: product, product_form_id: form_id, debug: false %}
+    </div>
 
-    <div class="d-flex">
+    {% comment %} CARAMEL APPLE - ONE TIME PURCHASE {% endcomment %}
+    <div id="caramel-apple-buybox" class="caramel-apple-buybox" data-caramel-apple-buybox>
+      <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 700; text-transform: uppercase;">One Time Purchase</h3>
+      
+      <fieldset style="border: none; padding: 0; margin: 0;">
+        <legend class="visually-hidden">Select quantity</legend>
+        
+        {% comment %} 1 Bag Option {% endcomment %}
+        <input
+          class="caramel-apple-option"
+          type="radio"
+          name="caramel-apple-quantity"
+          id="caramel-apple-qty-1"
+          value="1"
+          data-variant-id="51253690368292"
+          data-price="35.97"
+          data-compare-price="45.00"
+          data-savings="9.03"
+          checked
+          aria-label="1 Bag - 20% off - $35.97"
+        >
+        <label for="caramel-apple-qty-1" class="caramel-apple-card">
+          <span class="caramel-apple-radio" aria-hidden="true"></span>
+          <div class="caramel-apple-content">
+            <div>
+              <div class="caramel-apple-label">1 Bag</div>
+              <div class="caramel-apple-savings">20% savings</div>
+            </div>
+            <div class="caramel-apple-pricing">
+              <span class="caramel-apple-price-compare">$45.00</span>
+              <span class="caramel-apple-price-final">$35.97</span>
+              <span class="caramel-apple-badge">Save $9.03</span>
+            </div>
+          </div>
+        </label>
+
+        {% comment %} 2 Bags Option {% endcomment %}
+        <input
+          class="caramel-apple-option"
+          type="radio"
+          name="caramel-apple-quantity"
+          id="caramel-apple-qty-2"
+          value="2"
+          data-variant-id="51253690368292"
+          data-price="67.50"
+          data-compare-price="90.00"
+          data-savings="22.50"
+          aria-label="2 Bags - 25% off - $67.50"
+        >
+        <label for="caramel-apple-qty-2" class="caramel-apple-card">
+          <span class="caramel-apple-radio" aria-hidden="true"></span>
+          <div class="caramel-apple-content">
+            <div>
+              <div class="caramel-apple-label">2 Bags</div>
+              <div class="caramel-apple-savings">25% savings</div>
+            </div>
+            <div class="caramel-apple-pricing">
+              <span class="caramel-apple-price-compare">$90.00</span>
+              <span class="caramel-apple-price-final">$67.50</span>
+              <span class="caramel-apple-badge">Save $22.50</span>
+            </div>
+          </div>
+        </label>
+
+        {% comment %} 3 Bags Option {% endcomment %}
+        <input
+          class="caramel-apple-option"
+          type="radio"
+          name="caramel-apple-quantity"
+          id="caramel-apple-qty-3"
+          value="3"
+          data-variant-id="51253690368292"
+          data-price="94.50"
+          data-compare-price="135.00"
+          data-savings="40.50"
+          aria-label="3 Bags - 30% off - $94.50"
+        >
+        <label for="caramel-apple-qty-3" class="caramel-apple-card">
+          <span class="caramel-apple-radio" aria-hidden="true"></span>
+          <div class="caramel-apple-content">
+            <div>
+              <div class="caramel-apple-label">3 Bags</div>
+              <div class="caramel-apple-savings">30% savings</div>
+            </div>
+            <div class="caramel-apple-pricing">
+              <span class="caramel-apple-price-compare">$135.00</span>
+              <span class="caramel-apple-price-final">$94.50</span>
+              <span class="caramel-apple-badge">Save $40.50</span>
+            </div>
+          </div>
+        </label>
+      </fieldset>
+
+      <button
+        type="button"
+        class="caramel-apple-cta"
+        id="caramel-apple-add-to-cart"
+        aria-label="Add selected quantity to cart"
+      >
+        Add to Cart
+      </button>
+    </div>
+
+    <div class="d-flex" id="standard-atc-button-wrapper">
       <button
         class="btn-atc btn btn-primary w-100 tw-uppercase tw-bg-[#D2AF4BFF] tw-text-white tw-py-3 tw-px-4 tw-rounded-lg tw-font-bold tw-text-xl"
         type="submit"
@@ -197,12 +472,245 @@
 </div>
 
 <script>
-  document.querySelector('#product-atc-button').addEventListener('click', () => {
-    const checkout = document.querySelector('.hs-checkout-purchase');
-    const newButton = checkout.cloneNode(true);
-    checkout.parentNode.replaceChild(newButton, checkout);
-    newButton.addEventListener('click', (e) => {
-      window.location.href = '/checkout';
+  document.addEventListener('DOMContentLoaded', function() {
+    const atcButton = document.querySelector('#product-atc-button');
+    if (atcButton) {
+      atcButton.addEventListener('click', () => {
+        const checkout = document.querySelector('.hs-checkout-purchase');
+        if (checkout) {
+          const newButton = checkout.cloneNode(true);
+          checkout.parentNode.replaceChild(newButton, checkout);
+          newButton.addEventListener('click', (e) => {
+            window.location.href = '/checkout';
+          });
+        }
+      });
+    }
+  });
+
+  // Caramel Apple - Analytics helper
+  function trackCaramelAppleEvent(eventName, data) {
+    if (window.dataLayer) {
+      window.dataLayer.push({
+        event: eventName,
+        flavor: 'Caramel Apple',
+        ...data
+      });
+    }
+    console.log('[Caramel Apple Analytics]', eventName, data);
+  }
+
+  // Caramel Apple - Add to Cart handler
+  function handleCaramelAppleAddToCart() {
+    const selectedOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
+    
+    if (!selectedOption) {
+      console.error('No Caramel Apple option selected');
+      return;
+    }
+
+    const variantId = selectedOption.dataset.variantId;
+    const quantity = parseInt(selectedOption.value);
+    const price = selectedOption.dataset.price;
+    const savings = selectedOption.dataset.savings;
+    const ctaButton = document.getElementById('caramel-apple-add-to-cart');
+
+    // Disable button during request
+    if (ctaButton) {
+      ctaButton.disabled = true;
+      ctaButton.textContent = 'Adding...';
+    }
+
+    // Track analytics event
+    trackCaramelAppleEvent('caramel_apple_add_to_cart', {
+      quantity: quantity,
+      variant_id: variantId,
+      price: price,
+      savings: savings
     });
+
+    // Add to cart via AJAX
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        items: [{
+          id: variantId,
+          quantity: quantity
+        }]
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Successfully added to cart:', data);
+      
+      // Re-enable button
+      if (ctaButton) {
+        ctaButton.disabled = false;
+        ctaButton.textContent = 'Add to Cart';
+      }
+
+      // Trigger cart drawer/notification (compatible with most themes)
+      if (window.location.href.indexOf('cart') === -1) {
+        // Try to trigger common cart drawer events
+        document.dispatchEvent(new CustomEvent('cart:updated'));
+        document.dispatchEvent(new CustomEvent('product:added'));
+        
+        // Fallback: redirect to cart if no drawer detected after 500ms
+        setTimeout(() => {
+          const cartDrawer = document.querySelector('[data-cart-drawer], .cart-drawer, #CartDrawer');
+          if (!cartDrawer || !cartDrawer.classList.contains('active')) {
+            // Optional: show a success message or redirect
+            alert('Added to cart! Redirecting...');
+            window.location.href = '/cart';
+          }
+        }, 500);
+      }
+    })
+    .catch(error => {
+      console.error('Error adding to cart:', error);
+      
+      // Re-enable button
+      if (ctaButton) {
+        ctaButton.disabled = false;
+        ctaButton.textContent = 'Add to Cart';
+      }
+      
+      alert('Error adding to cart. Please try again.');
+    });
+  }
+
+  // Caramel Apple option selection handler
+  function handleCaramelAppleOptionChange(event) {
+    const input = event.target;
+    const quantity = input.value;
+    const price = input.dataset.price;
+    const savings = input.dataset.savings;
+
+    // Track analytics event
+    trackCaramelAppleEvent('caramel_apple_option_selected', {
+      quantity: quantity,
+      price: price,
+      savings: savings
+    });
+
+    console.log('Caramel Apple option selected:', { quantity, price, savings });
+  }
+
+  // Toggle between standard and Caramel Apple buy box
+  function toggleCaramelAppleBuyBox(isCaramelApple) {
+    try {
+      const sizeSelector = document.querySelector('[data-size-selector]');
+      const subscriptionBlock = document.querySelector('[data-subscription-block]');
+      const caramelAppleBuybox = document.querySelector('[data-caramel-apple-buybox]');
+      const standardAtcWrapper = document.getElementById('standard-atc-button-wrapper');
+      
+      if (isCaramelApple) {
+        // Hide standard buy box elements
+        if (sizeSelector) sizeSelector.style.display = 'none';
+        if (subscriptionBlock) subscriptionBlock.style.display = 'none';
+        if (standardAtcWrapper) standardAtcWrapper.style.display = 'none';
+        
+        // Show Caramel Apple buy box
+        if (caramelAppleBuybox) {
+          caramelAppleBuybox.classList.add('active');
+          
+          // Ensure first option is selected
+          const firstOption = document.getElementById('caramel-apple-qty-1');
+          if (firstOption && !document.querySelector('input[name="caramel-apple-quantity"]:checked')) {
+            firstOption.checked = true;
+          }
+        }
+        
+        console.log('[Caramel Apple] Buy box activated');
+      } else {
+        // Show standard buy box elements
+        if (sizeSelector) sizeSelector.style.display = 'block';
+        if (subscriptionBlock) subscriptionBlock.style.display = 'block';
+        if (standardAtcWrapper) standardAtcWrapper.style.display = 'flex';
+        
+        // Hide Caramel Apple buy box
+        if (caramelAppleBuybox) {
+          caramelAppleBuybox.classList.remove('active');
+        }
+        
+        console.log('[Caramel Apple] Standard buy box restored');
+      }
+    } catch (error) {
+      console.error('[Caramel Apple] Error toggling buy box:', error);
+      // Fail gracefully - leave standard buy box visible
+    }
+  }
+
+  // Initialize Caramel Apple functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Caramel Apple] Initializing...');
+    
+    // Attach event listeners to Caramel Apple options
+    const caramelAppleOptions = document.querySelectorAll('input[name="caramel-apple-quantity"]');
+    caramelAppleOptions.forEach(option => {
+      option.addEventListener('change', handleCaramelAppleOptionChange);
+    });
+
+    // Attach event listener to Add to Cart button
+    const caramelAppleCtaButton = document.getElementById('caramel-apple-add-to-cart');
+    if (caramelAppleCtaButton) {
+      caramelAppleCtaButton.addEventListener('click', handleCaramelAppleAddToCart);
+    }
+
+    // Get flavor input element
+    const flavorInput = document.getElementById('flavor-value');
+    
+    if (!flavorInput) {
+      console.warn('[Caramel Apple] Flavor input not found, leaving standard buy box visible');
+      return;
+    }
+    
+    // Check initial flavor on page load
+    const initialFlavor = flavorInput.value;
+    toggleCaramelAppleBuyBox(initialFlavor === 'Caramel Apple');
+    
+    // Create a MutationObserver to watch for flavor changes
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+          const currentFlavor = flavorInput.value;
+          toggleCaramelAppleBuyBox(currentFlavor === 'Caramel Apple');
+        }
+      });
+    });
+    
+    observer.observe(flavorInput, { attributes: true });
+    
+    // Also listen to the flavor dropdown labels for immediate feedback
+    const flavorLabels = document.querySelectorAll('[data-flavor-content][data-flavor]');
+    flavorLabels.forEach(label => {
+      label.addEventListener('click', function() {
+        const selectedFlavor = this.dataset.flavor;
+        setTimeout(() => {
+          toggleCaramelAppleBuyBox(selectedFlavor === 'Caramel Apple');
+        }, 100);
+      });
+    });
+
+    console.log('[Caramel Apple] Initialization complete');
+  });
+
+  // Keyboard accessibility for Caramel Apple options
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const target = e.target;
+      if (target.classList.contains('caramel-apple-card')) {
+        e.preventDefault();
+        const radio = target.previousElementSibling;
+        if (radio && radio.classList.contains('caramel-apple-option')) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change'));
+        }
+      }
+    }
   });
 </script>
