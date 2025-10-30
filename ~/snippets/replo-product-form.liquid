@@ -13,12 +13,58 @@
 
   /* Caramel Apple quantity option styling */
   .caramel-apple-option:checked + label {
-    border-color: rgba(0, 0, 0, 0.8) !important;
-    background-color: rgba(0, 0, 0, 0.04) !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #000 !important;
+  }
+
+  .caramel-apple-option:checked + label .price-original,
+  .caramel-apple-option:checked + label .price-compare {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  .caramel-apple-option:checked + label .price-final {
+    color: #fff !important;
+  }
+
+  .caramel-apple-option:checked + label .radio-circle::after {
+    opacity: 1;
   }
 
   .caramel-apple-options {
     display: none;
+  }
+
+  .radio-circle {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .radio-circle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .caramel-apple-option + label .radio-circle {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .caramel-apple-option:checked + label .radio-circle {
+    border-color: #fff;
+    background-color: transparent;
   }
 </style>
 
@@ -193,7 +239,7 @@
         <span class="tw-text-base tw-font-bold tw-uppercase">Buy More, Save More</span>
       </div>
       
-      <div class="tw-flex tw-flex-col tw-gap-2">
+      <div class="tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-overflow-hidden">
         {% comment %} 1 Bag Option {% endcomment %}
         <div>
           <input
@@ -210,18 +256,21 @@
           >
           <label
             for="caramel-apple-qty-1"
-            class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-transition-all hover:tw-border-black/50"
+            class="tw-flex tw-cursor-pointer tw-items-center tw-gap-3 tw-bg-white tw-px-4 tw-py-4 tw-transition-all tw-border-b tw-border-black/10"
+            role="radio"
+            aria-checked="true"
+            tabindex="0"
           >
-            <div class="tw-flex tw-flex-col">
-              <span class="tw-text-base tw-font-bold tw-uppercase">1 Bag</span>
-              <span class="tw-text-sm tw-text-black/60">(20% OFF)</span>
-            </div>
-            <div class="tw-flex tw-items-center tw-gap-3">
-              <div class="tw-flex tw-flex-col tw-items-end">
-                <span class="tw-text-sm tw-text-black/60 tw-line-through">$45.00</span>
-                <span class="tw-text-lg tw-font-bold">$35.97</span>
+            <div class="radio-circle"></div>
+            <div class="tw-flex tw-flex-1 tw-items-center tw-justify-between tw-gap-4">
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-base tw-font-bold tw-leading-tight">1 Bag <span class="tw-font-normal tw-text-sm">(20% OFF)</span></span>
               </div>
-              <span class="tw-rounded-lg tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white">Save $9.03</span>
+              <div class="tw-flex tw-items-center tw-gap-2">
+                <span class="price-compare tw-text-sm tw-text-black/50 tw-line-through tw-whitespace-nowrap">$45.00</span>
+                <span class="price-final tw-text-lg tw-font-bold tw-whitespace-nowrap">$35.97</span>
+                <span class="tw-rounded-md tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white tw-whitespace-nowrap">Save $9.03</span>
+              </div>
             </div>
           </label>
         </div>
@@ -241,18 +290,21 @@
           >
           <label
             for="caramel-apple-qty-2"
-            class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-transition-all hover:tw-border-black/50"
+            class="tw-flex tw-cursor-pointer tw-items-center tw-gap-3 tw-bg-white tw-px-4 tw-py-4 tw-transition-all tw-border-b tw-border-black/10"
+            role="radio"
+            aria-checked="false"
+            tabindex="0"
           >
-            <div class="tw-flex tw-flex-col">
-              <span class="tw-text-base tw-font-bold tw-uppercase">2 Bags</span>
-              <span class="tw-text-sm tw-text-black/60">(25% OFF)</span>
-            </div>
-            <div class="tw-flex tw-items-center tw-gap-3">
-              <div class="tw-flex tw-flex-col tw-items-end">
-                <span class="tw-text-sm tw-text-black/60 tw-line-through">$90.00</span>
-                <span class="tw-text-lg tw-font-bold">$67.50</span>
+            <div class="radio-circle"></div>
+            <div class="tw-flex tw-flex-1 tw-items-center tw-justify-between tw-gap-4">
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-base tw-font-bold tw-leading-tight">2 Bags <span class="tw-font-normal tw-text-sm">(25% OFF)</span></span>
               </div>
-              <span class="tw-rounded-lg tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white">Save $22.50</span>
+              <div class="tw-flex tw-items-center tw-gap-2">
+                <span class="price-compare tw-text-sm tw-text-black/50 tw-line-through tw-whitespace-nowrap">$90.00</span>
+                <span class="price-final tw-text-lg tw-font-bold tw-whitespace-nowrap">$67.50</span>
+                <span class="tw-rounded-md tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white tw-whitespace-nowrap">Save $22.50</span>
+              </div>
             </div>
           </label>
         </div>
@@ -272,18 +324,21 @@
           >
           <label
             for="caramel-apple-qty-3"
-            class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-transition-all hover:tw-border-black/50"
+            class="tw-flex tw-cursor-pointer tw-items-center tw-gap-3 tw-bg-white tw-px-4 tw-py-4 tw-transition-all"
+            role="radio"
+            aria-checked="false"
+            tabindex="0"
           >
-            <div class="tw-flex tw-flex-col">
-              <span class="tw-text-base tw-font-bold tw-uppercase">3 Bags</span>
-              <span class="tw-text-sm tw-text-black/60">(30% OFF)</span>
-            </div>
-            <div class="tw-flex tw-items-center tw-gap-3">
-              <div class="tw-flex tw-flex-col tw-items-end">
-                <span class="tw-text-sm tw-text-black/60 tw-line-through">$135.00</span>
-                <span class="tw-text-lg tw-font-bold">$94.50</span>
+            <div class="radio-circle"></div>
+            <div class="tw-flex tw-flex-1 tw-items-center tw-justify-between tw-gap-4">
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-base tw-font-bold tw-leading-tight">3 Bags <span class="tw-font-normal tw-text-sm">(30% OFF)</span></span>
               </div>
-              <span class="tw-rounded-lg tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white">Save $40.50</span>
+              <div class="tw-flex tw-items-center tw-gap-2">
+                <span class="price-compare tw-text-sm tw-text-black/50 tw-line-through tw-whitespace-nowrap">$135.00</span>
+                <span class="price-final tw-text-lg tw-font-bold tw-whitespace-nowrap">$94.50</span>
+                <span class="tw-rounded-md tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white tw-whitespace-nowrap">Save $40.50</span>
+              </div>
             </div>
           </label>
         </div>
@@ -297,6 +352,7 @@
         id="product-atc-button"
         name="add"
         data-text-add-to-cart="{{ 'product.add_to_cart' | t }}"
+        data-text-buy-now="Buy Now"
         {% unless current_variant.available %}
           disabled
         {% endunless %}
@@ -331,6 +387,11 @@
     document.getElementById('variant-id-input').value = variantId;
     document.getElementById('quantity-input').value = quantity;
     
+    // Update aria-checked states
+    const allLabels = document.querySelectorAll('[name="caramel-apple-quantity"] + label');
+    allLabels.forEach(label => label.setAttribute('aria-checked', 'false'));
+    input.nextElementSibling.setAttribute('aria-checked', 'true');
+    
     console.log('Caramel Apple - Quantity:', quantity, 'Variant ID:', variantId);
   }
 
@@ -339,6 +400,7 @@
     const sizeSelector = document.querySelector('[data-size-selector]');
     const subscriptionBlock = document.querySelector('[data-subscription-block]');
     const caramelAppleOptions = document.querySelector('[data-caramel-apple-options]');
+    const atcButton = document.getElementById('product-atc-button');
     
     if (isCaramelApple) {
       // Hide standard options
@@ -356,6 +418,11 @@
           document.getElementById('quantity-input').value = checkedOption.value;
         }
       }
+      
+      // Change button text to "BUY NOW"
+      if (atcButton) {
+        atcButton.textContent = atcButton.dataset.textBuyNow || 'Buy Now';
+      }
     } else {
       // Show standard options
       if (sizeSelector) sizeSelector.style.display = 'block';
@@ -366,6 +433,11 @@
       
       // Reset quantity to 1
       document.getElementById('quantity-input').value = '1';
+      
+      // Restore original button text
+      if (atcButton) {
+        atcButton.textContent = atcButton.dataset.textAddToCart || 'Add to Cart';
+      }
     }
   }
 
