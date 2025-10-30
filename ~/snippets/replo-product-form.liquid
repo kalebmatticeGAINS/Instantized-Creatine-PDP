@@ -1,0 +1,208 @@
+
+{{ 'tailwind.min.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'vendor-glightbox.min.js' | asset_url }}" defer></script>
+<script src="{{ 'replo-product-form.js' | asset_url }}" defer></script>
+
+<style>
+  /* Selected state styling for size and color options */
+  .product-option:checked + label {
+    border-color: rgba(0, 0, 0, 0.8) !important;
+    background-color: rgba(0, 0, 0, 0.04) !important;
+    color: #000 !important;
+  }
+</style>
+
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+%}
+
+<script type="application/json" id="replo-product-data">
+  {
+    "variants": {{ product.variants | json }},
+    "title": {{ product.title | json }}
+  }
+</script>
+
+<script>
+  console.log('this is being rendered')
+  window.productVariants = {{ product.variants | json }}
+</script>
+
+<div class="form-wrapper rounded">
+  {% form 'product', product, onsubmit: 'onSubmitAtcForm(this, event)' %}
+    <input type="hidden" name="id" value="{{ current_variant.id }}">
+
+    {% unless product.has_only_default_variant %}
+      <ul
+        class="product-options list-unstyled mb-6"
+        aria-label="{{ 'product.product_options' | t }}"
+      >
+        {% for option in product.options_with_values %}
+          {% if settings.size_buttons_names contains option.name %}
+            <div>
+              <div class="tw-mb-3 tw-flex tw-items-center tw-justify-between">
+                <span class="tw-text-base tw-font-bold tw-uppercase">{{ option.name }}</span>
+              </div>
+              <ul class="size-buttons list-unstyled tw-flex tw-flex-wrap tw-gap-2 tw-mb-6" aria-label="{{ option.name }}">
+              {% for value in option.values %}
+                <li class="tw-m-0 tw-block tw-p-0">
+                  <input
+                    class="product-option visually-hidden"
+                    type="radio"
+                    name="option-{{ option.name | handleize }}"
+                    id="option-{{ option.name | handleize }}-{{ value | handleize }}"
+                    value="{{ value | escape }}"
+                    data-product-id="{{ product.id }}"
+                    onchange="onChangeProductOption(this, event)"
+                    {% if option.selected_value == value %}
+                      checked
+                    {% endif %}
+                  >
+                  <label 
+                    for="option-{{ option.name | handleize }}-{{ value | handleize }}"
+                    class="tw-flex tw-min-w-12 tw-h-12 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-text-center tw-text-base tw-font-bold tw-uppercase tw-transition-all hover:tw-border-black/50"
+                  >
+                    {{ value }}
+                  </label>
+                </li>
+              {% endfor %}
+            </ul>
+            </div>
+          {% endif %}
+          {% if option.name == 'Flavor' %}
+            {% comment %} FLAVOR OPTIONS {% endcomment %}
+            <div class="tw-mt-6">
+              <div class="tw-mb-3 tw-flex tw-items-center tw-justify-between">
+                <span class="tw-text-base tw-font-bold tw-uppercase">Flavor</span>
+              </div>
+
+              <div class="tw-relative">
+                <button
+                  type="button"
+                  class="tw-flex tw-w-full tw-items-center tw-gap-3 tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-black"
+                  data-selector-toggle
+                  data-selected-option="og"
+                >
+                  <div class="tw-flex tw-items-center tw-gap-3" data-flavor-content>
+                    {% for image in product.metafields.custom.flavor_badges.value %}
+                      {{
+                        image
+                        | image_url: width: 150, height: 150, crop: 'center'
+                        | image_tag: class: 'tw-size-9 tw-rounded-full tw-object-contain tw-p-1', height: 150, width: 150
+                      }}
+                      {% break %}
+                    {% endfor %}
+
+                    <span class="tw-text-base tw-font-bold tw-uppercase">{{ option.values.first }}</span>
+                  </div>
+
+                  <svg
+                    class="tw-ml-auto tw-size-8 tw-transition-all"
+                    width="42"
+                    height="42"
+                    viewBox="0 0 42 42"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g clip-path="url(#clip0_23_31)">
+                    <path d="M12.4511 14.5163L9.98364 16.9838L20.4836 27.4838L30.9836 16.9838L28.5161 14.5163L20.4836 22.5313L12.4511 14.5163Z" fill="black"/>
+                    </g>
+                    <defs>
+                    <clipPath id="clip0_23_31">
+                    <rect width="42" height="42" fill="white"/>
+                    </clipPath>
+                    </defs>
+                  </svg>
+                </button>
+
+                <div
+                  class="
+                    tw-absolute tw-left-0 tw-top-full tw-z-[1] tw-mt-2 tw-grid tw-w-full tw-rounded-xl tw-border tw-border-solid
+                    tw-border-black/25 tw-bg-white tw-shadow-lg tw-transition-all
+                  "
+                  style="grid-template-rows: 0fr; opacity: 0;"
+                  data-selector-content
+                >
+                  <div class="tw-overflow-hidden">
+                    <input
+                      class="product-option visually-hidden"
+                      id="flavor-value"
+                      name="flavor"
+                      data-product-handle="{{ product.handle }}"
+                      data-product-id="{{ product.id }}"
+                      value="{{ option.values.first }}"
+                      onchange="onChangeProductOption(this, event)"
+                    >
+                    <ul class="tw-m-0 tw-list-none tw-p-0">
+                      {% for value in option.values %}
+                        <li class="tw-m-0 tw-block tw-p-0">
+                          <label
+                            class="tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-gap-3 tw-border-0 tw-bg-transparent tw-px-4 tw-py-3 tw-text-left tw-text-black"
+                            data-flavor-content
+                            data-flavor="{{ value }}"
+                            data-variant-id="{{ value.variant.id }}"
+                          >
+                            {% assign current_index = forloop.index0 %}
+                            {% for image in product.metafields.custom.flavor_badges.value %}
+                              {% if forloop.index0 == current_index %}
+                                {{
+                                  image
+                                  | image_url: width: 150, height: 150, crop: 'center'
+                                  | image_tag: class: 'tw-size-9 tw-rounded-full tw-object-contain tw-p-1', height: 150, width: 150
+                                }}
+                              {% endif %}
+                            {% endfor %}
+
+                            <span class="tw-text-base tw-font-bold tw-uppercase">{{ value }}</span>
+                            {%  if value == 'Sour Gummy' %}
+                              <span class="tw-text-xs tw-font-bold tw-uppercase tw-text-white tw-p-1 tw-rounded-lg" style="background: linear-gradient(135deg, #9ECD15, #EB7E6D, #E35298, #BD2991, #39B4CF);">NEW!</span>
+                            {% endif %}
+                          </label>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {%  endif %}
+        {% endfor %}
+      </ul>
+    {% endunless %}
+
+    {% comment %} {% render 'product-purchase-options' %} {% endcomment %}
+    {%- assign form_id = 'product_form_' | append: product.id -%}
+    {% render 'skio-block', product: product, product_form_id: form_id, debug: false %}
+
+    <div class="d-flex">
+      <button
+        class="btn-atc btn btn-primary w-100 tw-uppercase tw-bg-[#D2AF4BFF] tw-text-white tw-py-3 tw-px-4 tw-rounded-lg tw-font-bold tw-text-xl"
+        type="submit"
+        id="product-atc-button"
+        name="add"
+        data-text-add-to-cart="{{ 'product.add_to_cart' | t }}"
+        {% unless current_variant.available %}
+          disabled
+        {% endunless %}
+      >
+        {% if current_variant.available %}
+          {{ 'product.add_to_cart' | t }}
+        {% else %}
+          {{ 'product.sold_out' | t }}
+        {% endif %}
+      </button>
+    </div>
+    {% render 'product-qty-breaks' %}
+  {% endform %}
+</div>
+
+<script>
+  document.querySelector('#product-atc-button').addEventListener('click', () => {
+    const checkout = document.querySelector('.hs-checkout-purchase');
+    const newButton = checkout.cloneNode(true);
+    checkout.parentNode.replaceChild(newButton, checkout);
+    newButton.addEventListener('click', (e) => {
+      window.location.href = '/checkout';
+    });
+  });
+</script>
