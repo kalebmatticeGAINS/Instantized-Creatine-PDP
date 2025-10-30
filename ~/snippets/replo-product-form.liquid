@@ -10,6 +10,16 @@
     background-color: rgba(0, 0, 0, 0.04) !important;
     color: #000 !important;
   }
+
+  /* Caramel Apple quantity option styling */
+  .caramel-apple-option:checked + label {
+    border-color: rgba(0, 0, 0, 0.8) !important;
+    background-color: rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .caramel-apple-options {
+    display: none;
+  }
 </style>
 
 {% liquid
@@ -30,7 +40,8 @@
 
 <div class="form-wrapper rounded">
   {% form 'product', product, onsubmit: 'onSubmitAtcForm(this, event)' %}
-    <input type="hidden" name="id" value="{{ current_variant.id }}">
+    <input type="hidden" name="id" value="{{ current_variant.id }}" id="variant-id-input">
+    <input type="hidden" name="quantity" value="1" id="quantity-input">
 
     {% unless product.has_only_default_variant %}
       <ul
@@ -39,7 +50,7 @@
       >
         {% for option in product.options_with_values %}
           {% if settings.size_buttons_names contains option.name %}
-            <div>
+            <div data-size-selector>
               <div class="tw-mb-3 tw-flex tw-items-center tw-justify-between">
                 <span class="tw-text-base tw-font-bold tw-uppercase">{{ option.name }}</span>
               </div>
@@ -172,7 +183,112 @@
 
     {% comment %} {% render 'product-purchase-options' %} {% endcomment %}
     {%- assign form_id = 'product_form_' | append: product.id -%}
-    {% render 'skio-block', product: product, product_form_id: form_id, debug: false %}
+    <div data-subscription-block>
+      {% render 'skio-block', product: product, product_form_id: form_id, debug: false %}
+    </div>
+
+    {% comment %} CARAMEL APPLE - BUY MORE, SAVE MORE {% endcomment %}
+    <div class="caramel-apple-options tw-mb-6" data-caramel-apple-options>
+      <div class="tw-mb-3">
+        <span class="tw-text-base tw-font-bold tw-uppercase">Buy More, Save More</span>
+      </div>
+      
+      <div class="tw-flex tw-flex-col tw-gap-2">
+        {% comment %} 1 Bag Option {% endcomment %}
+        <div>
+          <input
+            class="caramel-apple-option visually-hidden"
+            type="radio"
+            name="caramel-apple-quantity"
+            id="caramel-apple-qty-1"
+            value="1"
+            data-variant-id="51253690368292"
+            data-original-price="45.00"
+            data-discount-price="35.97"
+            onchange="onChangeCaramelAppleQuantity(this)"
+            checked
+          >
+          <label
+            for="caramel-apple-qty-1"
+            class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-transition-all hover:tw-border-black/50"
+          >
+            <div class="tw-flex tw-flex-col">
+              <span class="tw-text-base tw-font-bold tw-uppercase">1 Bag</span>
+              <span class="tw-text-sm tw-text-black/60">(20% OFF)</span>
+            </div>
+            <div class="tw-flex tw-items-center tw-gap-3">
+              <div class="tw-flex tw-flex-col tw-items-end">
+                <span class="tw-text-sm tw-text-black/60 tw-line-through">$45.00</span>
+                <span class="tw-text-lg tw-font-bold">$35.97</span>
+              </div>
+              <span class="tw-rounded-lg tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white">Save $9.03</span>
+            </div>
+          </label>
+        </div>
+
+        {% comment %} 2 Bags Option {% endcomment %}
+        <div>
+          <input
+            class="caramel-apple-option visually-hidden"
+            type="radio"
+            name="caramel-apple-quantity"
+            id="caramel-apple-qty-2"
+            value="2"
+            data-variant-id="51253690368292"
+            data-original-price="90.00"
+            data-discount-price="67.50"
+            onchange="onChangeCaramelAppleQuantity(this)"
+          >
+          <label
+            for="caramel-apple-qty-2"
+            class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-transition-all hover:tw-border-black/50"
+          >
+            <div class="tw-flex tw-flex-col">
+              <span class="tw-text-base tw-font-bold tw-uppercase">2 Bags</span>
+              <span class="tw-text-sm tw-text-black/60">(25% OFF)</span>
+            </div>
+            <div class="tw-flex tw-items-center tw-gap-3">
+              <div class="tw-flex tw-flex-col tw-items-end">
+                <span class="tw-text-sm tw-text-black/60 tw-line-through">$90.00</span>
+                <span class="tw-text-lg tw-font-bold">$67.50</span>
+              </div>
+              <span class="tw-rounded-lg tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white">Save $22.50</span>
+            </div>
+          </label>
+        </div>
+
+        {% comment %} 3 Bags Option {% endcomment %}
+        <div>
+          <input
+            class="caramel-apple-option visually-hidden"
+            type="radio"
+            name="caramel-apple-quantity"
+            id="caramel-apple-qty-3"
+            value="3"
+            data-variant-id="51253690368292"
+            data-original-price="135.00"
+            data-discount-price="94.50"
+            onchange="onChangeCaramelAppleQuantity(this)"
+          >
+          <label
+            for="caramel-apple-qty-3"
+            class="tw-flex tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-xl tw-border tw-border-solid tw-border-black/25 tw-bg-white tw-px-4 tw-py-3 tw-transition-all hover:tw-border-black/50"
+          >
+            <div class="tw-flex tw-flex-col">
+              <span class="tw-text-base tw-font-bold tw-uppercase">3 Bags</span>
+              <span class="tw-text-sm tw-text-black/60">(30% OFF)</span>
+            </div>
+            <div class="tw-flex tw-items-center tw-gap-3">
+              <div class="tw-flex tw-flex-col tw-items-end">
+                <span class="tw-text-sm tw-text-black/60 tw-line-through">$135.00</span>
+                <span class="tw-text-lg tw-font-bold">$94.50</span>
+              </div>
+              <span class="tw-rounded-lg tw-bg-[#D2AF4BFF] tw-px-2 tw-py-1 tw-text-xs tw-font-bold tw-text-white">Save $40.50</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
 
     <div class="d-flex">
       <button
@@ -203,6 +319,89 @@
     checkout.parentNode.replaceChild(newButton, checkout);
     newButton.addEventListener('click', (e) => {
       window.location.href = '/checkout';
+    });
+  });
+
+  // Caramel Apple quantity selection handler
+  function onChangeCaramelAppleQuantity(input) {
+    const quantity = input.value;
+    const variantId = input.dataset.variantId;
+    
+    // Update hidden inputs
+    document.getElementById('variant-id-input').value = variantId;
+    document.getElementById('quantity-input').value = quantity;
+    
+    console.log('Caramel Apple - Quantity:', quantity, 'Variant ID:', variantId);
+  }
+
+  // Toggle between standard and Caramel Apple buy box
+  function toggleCaramelAppleBuyBox(isCaramelApple) {
+    const sizeSelector = document.querySelector('[data-size-selector]');
+    const subscriptionBlock = document.querySelector('[data-subscription-block]');
+    const caramelAppleOptions = document.querySelector('[data-caramel-apple-options]');
+    
+    if (isCaramelApple) {
+      // Hide standard options
+      if (sizeSelector) sizeSelector.style.display = 'none';
+      if (subscriptionBlock) subscriptionBlock.style.display = 'none';
+      
+      // Show Caramel Apple options
+      if (caramelAppleOptions) {
+        caramelAppleOptions.style.display = 'block';
+        
+        // Set the variant ID and quantity based on the checked option
+        const checkedOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
+        if (checkedOption) {
+          document.getElementById('variant-id-input').value = checkedOption.dataset.variantId;
+          document.getElementById('quantity-input').value = checkedOption.value;
+        }
+      }
+    } else {
+      // Show standard options
+      if (sizeSelector) sizeSelector.style.display = 'block';
+      if (subscriptionBlock) subscriptionBlock.style.display = 'block';
+      
+      // Hide Caramel Apple options
+      if (caramelAppleOptions) caramelAppleOptions.style.display = 'none';
+      
+      // Reset quantity to 1
+      document.getElementById('quantity-input').value = '1';
+    }
+  }
+
+  // Listen for flavor changes
+  document.addEventListener('DOMContentLoaded', function() {
+    const flavorInput = document.getElementById('flavor-value');
+    
+    // Check initial flavor on page load
+    if (flavorInput) {
+      const initialFlavor = flavorInput.value;
+      toggleCaramelAppleBuyBox(initialFlavor === 'Caramel Apple');
+    }
+    
+    // Create a MutationObserver to watch for flavor changes
+    if (flavorInput) {
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+            const currentFlavor = flavorInput.value;
+            toggleCaramelAppleBuyBox(currentFlavor === 'Caramel Apple');
+          }
+        });
+      });
+      
+      observer.observe(flavorInput, { attributes: true });
+    }
+    
+    // Also listen to the flavor dropdown labels
+    const flavorLabels = document.querySelectorAll('[data-flavor-content][data-flavor]');
+    flavorLabels.forEach(label => {
+      label.addEventListener('click', function() {
+        const selectedFlavor = this.dataset.flavor;
+        setTimeout(() => {
+          toggleCaramelAppleBuyBox(selectedFlavor === 'Caramel Apple');
+        }, 100);
+      });
     });
   });
 </script>
