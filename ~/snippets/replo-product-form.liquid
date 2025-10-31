@@ -574,6 +574,114 @@
     }
   }
 
+  function normalizeDeepLinkValue(value) {
+    return value.trim().toLowerCase().replace(/[\s_]+/g, '-');
+  }
+
+  function getDeepLinkParams() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const flavorParam = params.get('flavor');
+      const quantityParam = params.get('bags') || params.get('bag') || params.get('quantity') || params.get('qty');
+
+      if (!flavorParam && !quantityParam) {
+        return null;
+      }
+
+      return {
+        flavor: flavorParam ? flavorParam.trim() : null,
+        quantity: quantityParam ? quantityParam.trim() : null
+      };
+    } catch (error) {
+      console.warn('[Caramel Apple] Unable to parse deep link params:', error);
+      return null;
+    }
+  }
+
+  function setFlavorSelection(flavorInput, flavorValue) {
+    if (!flavorInput || !flavorValue) {
+      return false;
+    }
+
+    const normalizedTarget = normalizeDeepLinkValue(flavorValue);
+
+    if (!normalizedTarget) {
+      return false;
+    }
+
+    const flavorLabels = document.querySelectorAll('[data-flavor-content][data-flavor]');
+    let resolvedFlavor = null;
+
+    for (const label of flavorLabels) {
+      const labelValue = label.getAttribute('data-flavor');
+      if (labelValue && normalizeDeepLinkValue(labelValue) === normalizedTarget) {
+        resolvedFlavor = labelValue;
+        break;
+      }
+    }
+
+    if (!resolvedFlavor) {
+      console.warn('[Caramel Apple] Deep link flavor not recognized:', flavorValue);
+      return false;
+    }
+
+    if (flavorInput.value !== resolvedFlavor) {
+      flavorInput.value = resolvedFlavor;
+      flavorInput.setAttribute('value', resolvedFlavor);
+      flavorInput.dispatchEvent(new Event('input', { bubbles: true }));
+      flavorInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    const selectorToggle = document.querySelector('[data-selector-toggle]');
+
+    if (selectorToggle) {
+      selectorToggle.setAttribute('data-selected-option', normalizedTarget);
+
+      const toggleContent = selectorToggle.querySelector('[data-flavor-content]');
+      const matchingLabel = resolvedFlavor
+        ? document.querySelector(`[data-flavor-content][data-flavor="${resolvedFlavor}"]`)
+        : null;
+
+      if (toggleContent && matchingLabel) {
+        toggleContent.innerHTML = matchingLabel.innerHTML;
+      }
+    }
+
+    return true;
+  }
+
+  function applyDeepLinkDefaults(flavorInput) {
+    const deepLink = getDeepLinkParams();
+
+    if (!deepLink || !flavorInput) {
+      return null;
+    }
+
+    const appliedDefaults = {};
+
+    if (deepLink.flavor && setFlavorSelection(flavorInput, deepLink.flavor)) {
+      appliedDefaults.flavor = flavorInput.value;
+    }
+
+    if (deepLink.quantity) {
+      const desiredOption = document.querySelector(
+        `input[name="caramel-apple-quantity"][value="${deepLink.quantity}"]`
+      );
+
+      if (desiredOption) {
+        desiredOption.checked = true;
+        appliedDefaults.quantity = deepLink.quantity;
+      }
+    }
+
+    if (Object.keys(appliedDefaults).length) {
+      console.log('[Caramel Apple] Deep link applied from query params:', appliedDefaults);
+      return appliedDefaults;
+    }
+
+    return null;
+  }
+
   // Initialize Caramel Apple functionality
   document.addEventListener('DOMContentLoaded', function() {
     console.log('[Caramel Apple] Initializing...');
@@ -592,6 +700,9 @@
       return;
     }
     
+    const deepLinkDefaults = applyDeepLinkDefaults(flavorInput);
+    window.__caramelAppleDeepLinkDefaults = deepLinkDefaults;
+
     // Check initial flavor on page load
     const initialFlavor = flavorInput.value;
     toggleCaramelAppleBuyBox(initialFlavor === 'Caramel Apple');
@@ -599,9 +710,21 @@
     // If Caramel Apple is initially selected, update form inputs
     if (initialFlavor === 'Caramel Apple') {
       setTimeout(() => {
-        const selectedOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
-        if (selectedOption) {
-          handleCaramelAppleOptionChange({ target: selectedOption });
+        let targetOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
+
+        if (deepLinkDefaults && deepLinkDefaults.quantity) {
+          const preferredOption = document.querySelector(
+            `input[name="caramel-apple-quantity"][value="${deepLinkDefaults.quantity}"]`
+          );
+
+          if (preferredOption) {
+            preferredOption.checked = true;
+            targetOption = preferredOption;
+          }
+        }
+
+        if (targetOption) {
+          handleCaramelAppleOptionChange({ target: targetOption });
         }
       }, 100);
     }
@@ -616,9 +739,24 @@
           // If Caramel Apple is selected, update variant ID after buy box is set up
           if (currentFlavor === 'Caramel Apple') {
             setTimeout(() => {
-              const selectedOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
-              if (selectedOption) {
-                handleCaramelAppleOptionChange({ target: selectedOption });
+              let targetOption = null;
+
+              if (window.__caramelAppleDeepLinkDefaults && window.__caramelAppleDeepLinkDefaults.quantity) {
+                targetOption = document.querySelector(
+                  `input[name="caramel-apple-quantity"][value="${window.__caramelAppleDeepLinkDefaults.quantity}"]`
+                );
+
+                if (targetOption) {
+                  targetOption.checked = true;
+                }
+              }
+
+              if (!targetOption) {
+                targetOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
+              }
+
+              if (targetOption) {
+                handleCaramelAppleOptionChange({ target: targetOption });
               }
             }, 100);
           }
@@ -638,9 +776,24 @@
           
           // If Caramel Apple is selected, update variant ID after buy box is set up
           if (selectedFlavor === 'Caramel Apple') {
-            const selectedOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
-            if (selectedOption) {
-              handleCaramelAppleOptionChange({ target: selectedOption });
+            let targetOption = null;
+
+            if (window.__caramelAppleDeepLinkDefaults && window.__caramelAppleDeepLinkDefaults.quantity) {
+              targetOption = document.querySelector(
+                `input[name="caramel-apple-quantity"][value="${window.__caramelAppleDeepLinkDefaults.quantity}"]`
+              );
+
+              if (targetOption) {
+                targetOption.checked = true;
+              }
+            }
+
+            if (!targetOption) {
+              targetOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
+            }
+
+            if (targetOption) {
+              handleCaramelAppleOptionChange({ target: targetOption });
             }
           }
         }, 100);
