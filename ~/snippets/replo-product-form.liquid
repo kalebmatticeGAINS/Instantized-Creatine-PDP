@@ -574,45 +574,60 @@
     }
   }
 
-  function getDeepLinkSlug() {
+  function normalizeDeepLinkValue(value) {
+    return value.trim().toLowerCase().replace(/[\s_]+/g, '-');
+  }
+
+  function getDeepLinkParams() {
     try {
-      const pathSegments = window.location.pathname.split('/').filter(Boolean);
-
-      if (pathSegments.length >= 3 && pathSegments[0] === 'products') {
-        return decodeURIComponent(pathSegments.slice(2).join('/'));
-      }
-
       const params = new URLSearchParams(window.location.search);
+      const flavorParam = params.get('flavor');
+      const quantityParam = params.get('bags') || params.get('bag') || params.get('quantity') || params.get('qty');
 
-      if (params.has('default_slug')) {
-        return params.get('default_slug');
+      if (!flavorParam && !quantityParam) {
+        return null;
       }
 
-      if (params.has('slug')) {
-        return params.get('slug');
-      }
-
-      return null;
+      return {
+        flavor: flavorParam ? flavorParam.trim() : null,
+        quantity: quantityParam ? quantityParam.trim() : null
+      };
     } catch (error) {
-      console.warn('[Caramel Apple] Unable to parse deep link slug:', error);
+      console.warn('[Caramel Apple] Unable to parse deep link params:', error);
       return null;
     }
   }
 
-  function setFlavorSelection(flavorInput, flavorName) {
-    if (!flavorInput || !flavorName) {
+  function setFlavorSelection(flavorInput, flavorValue) {
+    if (!flavorInput || !flavorValue) {
       return false;
     }
 
-    const normalizedFlavor = flavorName.trim();
+    const normalizedTarget = normalizeDeepLinkValue(flavorValue);
 
-    if (!normalizedFlavor) {
+    if (!normalizedTarget) {
       return false;
     }
 
-    if (flavorInput.value !== normalizedFlavor) {
-      flavorInput.value = normalizedFlavor;
-      flavorInput.setAttribute('value', normalizedFlavor);
+    const flavorLabels = document.querySelectorAll('[data-flavor-content][data-flavor]');
+    let resolvedFlavor = null;
+
+    for (const label of flavorLabels) {
+      const labelValue = label.getAttribute('data-flavor');
+      if (labelValue && normalizeDeepLinkValue(labelValue) === normalizedTarget) {
+        resolvedFlavor = labelValue;
+        break;
+      }
+    }
+
+    if (!resolvedFlavor) {
+      console.warn('[Caramel Apple] Deep link flavor not recognized:', flavorValue);
+      return false;
+    }
+
+    if (flavorInput.value !== resolvedFlavor) {
+      flavorInput.value = resolvedFlavor;
+      flavorInput.setAttribute('value', resolvedFlavor);
       flavorInput.dispatchEvent(new Event('input', { bubbles: true }));
       flavorInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
@@ -620,15 +635,12 @@
     const selectorToggle = document.querySelector('[data-selector-toggle]');
 
     if (selectorToggle) {
-      selectorToggle.setAttribute(
-        'data-selected-option',
-        normalizedFlavor.toLowerCase().replace(/\s+/g, '-')
-      );
+      selectorToggle.setAttribute('data-selected-option', normalizedTarget);
 
       const toggleContent = selectorToggle.querySelector('[data-flavor-content]');
-      const matchingLabel = document.querySelector(
-        `[data-flavor-content][data-flavor="${normalizedFlavor}"]`
-      );
+      const matchingLabel = resolvedFlavor
+        ? document.querySelector(`[data-flavor-content][data-flavor="${resolvedFlavor}"]`)
+        : null;
 
       if (toggleContent && matchingLabel) {
         toggleContent.innerHTML = matchingLabel.innerHTML;
@@ -639,36 +651,32 @@
   }
 
   function applyDeepLinkDefaults(flavorInput) {
-    const slug = getDeepLinkSlug();
+    const deepLink = getDeepLinkParams();
 
-    if (!slug || !flavorInput) {
+    if (!deepLink || !flavorInput) {
       return null;
     }
 
-    const normalizedSlug = slug.trim().toLowerCase();
+    const appliedDefaults = {};
 
-    if (!normalizedSlug) {
-      return null;
+    if (deepLink.flavor && setFlavorSelection(flavorInput, deepLink.flavor)) {
+      appliedDefaults.flavor = flavorInput.value;
     }
 
-    if (normalizedSlug.startsWith('caramel-apple-2')) {
-      setFlavorSelection(flavorInput, 'Caramel Apple');
-
-      const desiredOption = document.querySelector('input[name="caramel-apple-quantity"][value="2"]');
+    if (deepLink.quantity) {
+      const desiredOption = document.querySelector(
+        `input[name="caramel-apple-quantity"][value="${deepLink.quantity}"]`
+      );
 
       if (desiredOption) {
         desiredOption.checked = true;
+        appliedDefaults.quantity = deepLink.quantity;
       }
-
-      console.log('[Caramel Apple] Deep link applied from slug:', slug);
-
-      return { flavor: 'Caramel Apple', quantity: '2', slug: slug };
     }
 
-    if (normalizedSlug.startsWith('caramel-apple')) {
-      setFlavorSelection(flavorInput, 'Caramel Apple');
-      console.log('[Caramel Apple] Deep link applied (flavor only) from slug:', slug);
-      return { flavor: 'Caramel Apple', slug: slug };
+    if (Object.keys(appliedDefaults).length) {
+      console.log('[Caramel Apple] Deep link applied from query params:', appliedDefaults);
+      return appliedDefaults;
     }
 
     return null;
@@ -692,8 +700,8 @@
       return;
     }
     
-    const slugDefaults = applyDeepLinkDefaults(flavorInput);
-    window.__caramelAppleDeepLinkDefaults = slugDefaults;
+    const deepLinkDefaults = applyDeepLinkDefaults(flavorInput);
+    window.__caramelAppleDeepLinkDefaults = deepLinkDefaults;
 
     // Check initial flavor on page load
     const initialFlavor = flavorInput.value;
@@ -704,9 +712,9 @@
       setTimeout(() => {
         let targetOption = document.querySelector('input[name="caramel-apple-quantity"]:checked');
 
-        if (slugDefaults && slugDefaults.quantity) {
+        if (deepLinkDefaults && deepLinkDefaults.quantity) {
           const preferredOption = document.querySelector(
-            `input[name="caramel-apple-quantity"][value="${slugDefaults.quantity}"]`
+            `input[name="caramel-apple-quantity"][value="${deepLinkDefaults.quantity}"]`
           );
 
           if (preferredOption) {
